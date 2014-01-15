@@ -17,15 +17,18 @@ Luca Bacchi <bacchilu@gmail.com> - http://www.lucabacchi.it
 """
 
 import threading
-import Queue
 
 
-class Queue2(Queue.Queue):
+class Queue(object):
 
-    def __init__(self, maxsize=0):
+    def __init__(self):
+        self.cond = threading.Condition()
+        self.items = []
 
-        self.lock = threading.Lock()
-        Queue.Queue.__init__(self, maxsize)
+    def put(self, item):
+        with self.cond:
+            self.items.append(item)
+            self.cond.notify()
 
     def getAll(self):
         """
@@ -35,24 +38,18 @@ class Queue2(Queue.Queue):
         values in a single list.
         """
 
-        with self.lock:
-            ret = []
-            m = self.get()
-            ret.append(m)
-            while True:
-                try:
-                    m = self.get(False)
-                    ret.append(m)
-                except Queue.Empty:
-                    break
-            return ret
+        with self.cond:
+            while len(self.items) == 0:
+                self.cond.wait()
+            items, self.items = self.items, []
+        return items
 
 
 class QueueMail(threading.Thread):
 
     t = None
 
-    q = Queue2()
+    q = Queue()
     e = threading.Event()
 
     send_mail = None
@@ -127,7 +124,7 @@ if __name__ == '__main__':
         """
 
         print '''Sending
-    %s
+%s
     ''' % msg
 
 

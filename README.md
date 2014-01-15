@@ -18,9 +18,11 @@ Usage:
     finally:
         QueueMail.stop()
 
-# Queue2
+# Queue
 
-Queue2 is a subclass of Queue.Queue of the Python STL. Queue2 as a getAll method very similar to the parent get method: getAll is a blocking method that waits if there are no values in the queue. But if there are values, they are all returned in a list.
+Queue as an interface which is a subset of the Python STL Queue.Queue interface: the put method to populate the Queue, and the new getAll method to extract values from the queue.
+
+getAll is a blocking method that waits if there are no values in the queue. But if there are values, they are all returned in a list.
 
 # License
 
