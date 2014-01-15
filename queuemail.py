@@ -20,16 +20,6 @@ import threading
 import Queue
 
 
-def sendMail(subject, msg):
-    """
-    Executes email send.
-    """
-
-    print '''Sending
-%s
-''' % msg
-
-
 class Queue2(Queue.Queue):
 
     def __init__(self, maxsize=0):
@@ -65,8 +55,11 @@ class QueueMail(threading.Thread):
     q = Queue2()
     e = threading.Event()
 
+    send_mail = None
+
     @staticmethod
-    def avvia():
+    def avvia(sendMail):
+        QueueMail.send_mail = staticmethod(sendMail)
         QueueMail.t = QueueMail()
         QueueMail.t.start()
 
@@ -117,7 +110,7 @@ class QueueMail(threading.Thread):
             for (subject, messages) in msgList.items():
                 if len(messages) > 0:
                     msg = ('\n' + '-' * 30 + '\n').join(messages)
-                    sendMail(subject, msg)
+                    QueueMail.send_mail(subject, msg)
 
             if exit:
                 return
@@ -126,7 +119,19 @@ class QueueMail(threading.Thread):
 
 
 if __name__ == '__main__':
-    QueueMail.avvia()
+
+
+    def sendMail(subject, msg):
+        """
+        Executes email send.
+        """
+
+        print '''Sending
+    %s
+    ''' % msg
+
+
+    QueueMail.avvia(sendMail)
     try:
         QueueMail.send(u'Ciao', u'Hello World! 1')
         QueueMail.send(u'Ciao', u'Hello World! 2')
