@@ -2,33 +2,42 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+import time
 
 import queuemail
-
-
-def sendMail(subject, msg):
-    """
-    Mock of mail sender.
-    """
-
-    print '''=== Sending === 
-%s
-=============== 
-''' % msg
 
 
 class TestQueueMail(unittest.TestCase):
 
     def setUp(self):
-        queuemail.QueueMail.avvia(sendMail)
+        self.lastSend = u''
+
+    def sendMail(self, subject, body):
+        """
+        Mock of mail sender.
+        """
+
+        self.lastSend = (subject, body)
 
     def test_1(self):
-        queuemail.QueueMail.send(u'Ciao', u'Hello World! 1')
-        queuemail.QueueMail.send(u'Ciao', u'Hello World! 2')
-        queuemail.QueueMail.send(u'Ciao2', u'Hello World! 3')
+        queuemail.QueueMail.avvia(self.sendMail)
 
-    def tearDown(self):
+        queuemail.QueueMail.send(u's1', u'b1')
+        time.sleep(1)
+
+        self.assertEqual(self.lastSend, (u's1', u'b1'))
+
+        queuemail.QueueMail.send(u's2', u'b2')
+        queuemail.QueueMail.send(u's2', u'b3')
+        time.sleep(1)
+
+        self.assertEqual(self.lastSend, (u's1', u'b1'))
+
         queuemail.QueueMail.stop()
+        self.assertEqual(self.lastSend, (u's2',
+                         u'''b2
+------------------------------
+b3'''))
 
 
 if __name__ == '__main__':
