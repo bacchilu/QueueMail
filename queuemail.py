@@ -41,7 +41,7 @@ class Queue(object):
         with self.cond:
             while len(self.items) == 0:
                 self.cond.wait()
-            items, self.items = self.items, []
+            (items, self.items) = (self.items, [])
         return items
 
 
@@ -115,23 +115,3 @@ class QueueMail(threading.Thread):
             QueueMail.e.wait(60.0 * 2)
 
 
-if __name__ == '__main__':
-
-
-    def sendMail(subject, msg):
-        """
-        Executes email send.
-        """
-
-        print '''Sending
-%s
-    ''' % msg
-
-
-    QueueMail.avvia(sendMail)
-    try:
-        QueueMail.send(u'Ciao', u'Hello World! 1')
-        QueueMail.send(u'Ciao', u'Hello World! 2')
-        QueueMail.send(u'Ciao2', u'Hello World! 3')
-    finally:
-        QueueMail.stop()
