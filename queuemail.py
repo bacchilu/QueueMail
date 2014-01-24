@@ -65,6 +65,7 @@ class QueueMail(threading.Thread):
         QueueMail.q.put(None)
         QueueMail.e.set()
         QueueMail.t.join()
+        QueueMail.e.clear()
 
     @staticmethod
     def send(subject, body):
