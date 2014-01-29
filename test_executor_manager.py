@@ -115,5 +115,57 @@ b2'''))
             executor_manager.ExecutorManager.stop()
 
 
+class TestQueueMail(unittest.TestCase):
+
+    def setUp(self):
+        self.lastSend = u''
+
+    def sendMail(self, subject, body):
+        """
+        Mock of mail sender.
+        """
+
+        self.lastSend = sendMail(subject, body)
+
+    def test_1(self):
+        executor_manager.QueueMail.avvia(self.sendMail)
+
+        executor_manager.QueueMail.send(u's1', u'b1')
+        time.sleep(1)
+        self.assertEqual(self.lastSend, (u's1', u'b1'))
+
+        executor_manager.QueueMail.send(u's1', u'b2')
+        executor_manager.QueueMail.send(u's1', u'b3')
+        time.sleep(1)
+        self.assertEqual(self.lastSend, (u's1', u'b1'))
+
+        executor_manager.QueueMail.stop()
+        self.assertEqual(self.lastSend, (u's1',
+                         u'''b2
+------------------------------
+b3'''))
+
+    def test_2(self):
+        executor_manager.QueueMail.avvia(self.sendMail)
+
+        executor_manager.QueueMail.send(u's1', u'b1')
+        time.sleep(1)
+        self.assertEqual(self.lastSend, (u's1', u'b1'))
+
+        executor_manager.QueueMail.send(u's2', u'b1')
+        time.sleep(1)
+        executor_manager.QueueMail.send(u's2', u'b2')
+        time.sleep(1)
+        self.assertEqual(self.lastSend, (u's2', u'b1'))
+
+        executor_manager.QueueMail.stop()
+        self.assertEqual(self.lastSend, (u's2', u'b2'))
+
+    def test_3(self):
+        executor_manager.QueueMail.avvia(self.sendMail)
+        executor_manager.QueueMail.stop()
+        self.assertEqual(self.lastSend, u'')
+
+
 if __name__ == '__main__':
     unittest.main()

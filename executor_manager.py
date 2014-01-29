@@ -191,3 +191,61 @@ class ExecutorManager(threading.Thread):
             self.sendJob(arg)
 
 
+class QueueMail(threading.Thread):
+
+    def sendMail(subject, body):
+        """
+        Mock of mail sender.
+        """
+
+        return (subject, body)
+
+    @staticmethod
+    def separateEmails(argsList):
+        """
+        The email bodies are separate by lines
+        """
+
+        assert len(argsList) > 0
+        subject = argsList[0][0]
+        bodies = [body for (_, body) in argsList]
+        msg = ('\n' + '-' * 30 + '\n').join(bodies)
+        return (subject, msg)
+
+    @staticmethod
+    def getKey(arg):
+        """
+        Returns the subject of the argument
+        """
+
+        (subject, _) = arg
+        return subject
+
+    @staticmethod
+    def avvia(sendMail):
+        """
+        Il servizio avvia un thread che ascolta su una coda per i messaggi da
+        spedire.
+        sendMail deve essere un callable con argomenti (subject, body)
+        """
+
+        ExecutorManager.avvia(sendMail, QueueMail.separateEmails,
+                              QueueMail.getKey)
+
+    @staticmethod
+    def stop():
+        """
+        Mando un messaggio None che viene interpretato come segnale di uscita
+        """
+
+        ExecutorManager.stop()
+
+    @staticmethod
+    def send(subject, body):
+        """
+        Accoda il messaggio da spedire
+        """
+
+        ExecutorManager.execute((subject, body))
+
+
